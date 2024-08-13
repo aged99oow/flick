@@ -1,5 +1,6 @@
 #
-# FlickTacToe.py 2022/11/20
+# フリック三目並べ 1.1
+# FlickTacToe.py 2024/8/13
 #
 import pyxel
 WIDTH, HEIGHT = 109, 160
@@ -19,11 +20,11 @@ WARP = (40,36,37,38,39,40,36, 12,0,0,0,0,0,8, 19,0,0,0,0,0,15, 26,0,0,0,0,0,22, 
 
 class App:
     def __init__(self):
-        pyxel.init(WIDTH, HEIGHT, title='Flick Tac Toe')
+        pyxel.init(WIDTH, HEIGHT, title='Flick Tac Toe 1.1')
         pyxel.load('assets/FlickTacToe.pyxres')
         pyxel.mouse(True)
         self.rept = 0
-        self.debug = False
+        self.assist = False
         self.wait = 0
         self.vsmode = 1
         self.board = [0]*49
@@ -37,12 +38,12 @@ class App:
         pyxel.run(self.update, self.draw)
 
     def holddown(self):
-        if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT, 60, 1):
+        if pyxel.btnp(pyxel.MOUSE_BUTTON_LEFT, hold=60, repeat=1):
             if self.rept==0:
                 self.rept = 1
             elif self.rept==1:
                 self.rept = 2
-                self.debug = not self.debug
+                self.assist = not self.assist
         else:
             self.rept = 0
 
@@ -257,15 +258,6 @@ class App:
                     self.st = ST_START
 
         if self.st==ST_START:
-            # -------- DEBUG
-            #self.turn = P2
-            #self.inhand = [0,0,0]
-            #self.board = [0,0,0,0,0,0,0, 0,0,0,0,2,1,0, 0,1,1,0,0,0,0, 0,0,2,0,1,0,0, 0,0,2,1,0,2,0, 0,0,0,0,0,2,0, 0,0,0,0,0,0,0]
-            #self.win = [False, False, False]
-            #self.hist_move = []
-            #self.st = ST_COMPUTE
-            #return
-            # --------
             if self.preset_loop==0:
                 self.turn = pyxel.rndi(P1, P2)
                 self.inhand = [0,5,5]
@@ -283,6 +275,7 @@ class App:
                             break
                     self.inhand[self.turn] -= 1
                     self.preset_count = 1
+                    pyxel.play(0, [2])
                 elif self.preset_count>=9:
                     self.board[self.this_pos] = self.this_piece
                     self.turn = OPP[self.turn]
@@ -424,7 +417,7 @@ class App:
         if draw_pos in self.list_canplace:
             for e in self.list_all1move:
                 if e[0]==take_pos and e[1]==draw_pos:
-                    if self.debug:  # DEBUG
+                    if self.assist:
                         c = 11 if e[2]==turn else 3 if e[2]==MUSTWIN else 10 if e[2]==NOTLOSS else 7 if e[2]==DRAW else 4 if e[2]==OTHER else 2 if e[2]==MUSTLOSS else 8
                     else:
                         c = 10
@@ -447,7 +440,6 @@ class App:
     def draw_piece(self):
         for y in range(1,6):
             for x in range(1,6):
-                # pyxel.text(BOARD_X+3+x*20, BOARD_Y+3+y*20, f'{y*7+x}', 0)  # DEBUG
                 p = self.board[y*7+x]
                 if p==P1 or p==P2:
                     if not (p==self.turn and self.st==ST_PLACE and y*7+x==self.take_pos):  # 取った位置以外に円を表示(P1,P2)
@@ -460,28 +452,28 @@ class App:
                     if self.win[P1] or self.win[P2]:
                         if self.threerow[y*7+x]:
                             pyxel.circb(BOARD_X+10+x*20, BOARD_Y+10+y*20, 8, 7 if pyxel.frame_count//8%2 else 8)  # ３つ並んだ位置に円を表示
-                if self.st==ST_TAKE and self.debug:  # DEBUG
+                if self.st==ST_TAKE and self.assist:
                     for win in self.list_win:
                         if win[0]==y*7+x:
-                            pyxel.circ(BOARD_X+2+x*20, BOARD_Y+19+y*20, 1, 11)
+                            pyxel.circ(BOARD_X+1+x*20, BOARD_Y+19+y*20, 1, 11)
                     for mustwin in self.list_mustwin:
                         if mustwin[0]==y*7+x:
-                            pyxel.circ(BOARD_X+5+x*20, BOARD_Y+19+y*20, 1, 3)
+                            pyxel.circ(BOARD_X+4+x*20, BOARD_Y+19+y*20, 1, 3)
                     for notloss in self.list_notloss:
                         if notloss[0]==y*7+x:
-                            pyxel.circ(BOARD_X+8+x*20, BOARD_Y+19+y*20, 1, 10)
+                            pyxel.circ(BOARD_X+7+x*20, BOARD_Y+19+y*20, 1, 10)
                     for draw in self.list_draw:
                         if draw[0]==y*7+x:
-                            pyxel.circ(BOARD_X+11+x*20, BOARD_Y+19+y*20, 1, 7)
+                            pyxel.circ(BOARD_X+10+x*20, BOARD_Y+19+y*20, 1, 7)
                     for other in self.list_other:
                         if other[0]==y*7+x:
-                            pyxel.circ(BOARD_X+14+x*20, BOARD_Y+19+y*20, 1, 4)
+                            pyxel.circ(BOARD_X+13+x*20, BOARD_Y+19+y*20, 1, 4)
                     for mustloss in self.list_mustloss:
                         if mustloss[0]==y*7+x:
-                            pyxel.circ(BOARD_X+17+x*20, BOARD_Y+19+y*20, 1, 2)
+                            pyxel.circ(BOARD_X+16+x*20, BOARD_Y+19+y*20, 1, 2)
                     for loss in self.list_loss:
                         if loss[0]==y*7+x:
-                            pyxel.circ(BOARD_X+20+x*20, BOARD_Y+19+y*20, 1, 8)
+                            pyxel.circ(BOARD_X+19+x*20, BOARD_Y+19+y*20, 1, 8)
 
         if self.st==ST_START and self.preset_loop>0:
             this_x = self.this_pos%7
@@ -580,9 +572,9 @@ class App:
                 pyxel.text(INHAND_X1+10, INHAND_Y1+9, '3 times same position', 1)
                 pyxel.text(INHAND_X1+9 , INHAND_Y1+8, '3 times same position', 10)
 
-    def draw_debug(self):
-        if self.debug:
-            pyxel.text(INHAND_X1+INHAND_WIDTH-20, INHAND_Y1+1, 'DEBUG', 1)
+    def draw_assist(self):
+        if self.assist:
+            pyxel.text(INHAND_X1+INHAND_WIDTH-25, INHAND_Y1+2, 'Assist', 5)
 
     def draw(self):
         pyxel.cls(3)
@@ -600,6 +592,6 @@ class App:
         else:
             self.draw_turn()
             self.draw_same_pos()
-        self.draw_debug()
+        self.draw_assist()
         
 App()
